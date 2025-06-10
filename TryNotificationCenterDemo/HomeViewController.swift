@@ -23,8 +23,8 @@ class HomeViewController: UIViewController {
                                                object: nil) // object 傳 nil 表示接收來自任何發送者的通知
         
         print("HomeViewController: 我已經準備好接收主題變更的通知了。")
-        // 初始化時先套用一次目前主題（假設預設是 light）
-        applyTheme(.light)
+        // --- 新增步驟: App 啟動時，從 UserDefaults 讀取主題來設定初始外觀 ---
+        loadAndApplyTheme()
     }
     
     private func setupUI() {
@@ -37,6 +37,17 @@ class HomeViewController: UIViewController {
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             titleLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
+    }
+    
+    private func loadAndApplyTheme() {
+        // 從 UserDefaults 中用鑰匙讀取儲存的字串 ("light" or "dark")
+        let savedThemeValue = UserDefaults.standard.string(forKey: UserDefaultsKeys.appTheme)
+        
+        // 如果讀取到的值是 nil (例如第一次開啟App)，就預設為 "light"
+        // 再根據字串，初始化成我們的 Theme enum
+        let currentTheme = Theme(rawValue: savedThemeValue ?? "light") ?? .light
+        
+        applyTheme(currentTheme)
     }
 
     // *** 步驟 2: 實作處理方法 ***

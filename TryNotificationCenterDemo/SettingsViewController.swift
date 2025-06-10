@@ -30,7 +30,7 @@ class SettingsViewController: UIViewController {
         print("SettingsViewController: 我現在既是發送者，也是監聽者了。")
         
         // --- 步驟 2: 初始化時套用一次主題 ---
-        applyTheme(currentTheme)
+        loadAndApplyTheme()
     }
     
     private func setupUI() {
@@ -51,6 +51,12 @@ class SettingsViewController: UIViewController {
         ])
     }
     
+    private func loadAndApplyTheme() {
+        let savedThemeValue = UserDefaults.standard.string(forKey: UserDefaultsKeys.appTheme)
+        let currentTheme = Theme(rawValue: savedThemeValue ?? "light") ?? .light
+        applyTheme(currentTheme)
+    }
+    
     // --- 步驟 3: 新增處理通知的方法 ---
     @objc private func handleThemeChange(_ notification: Notification) {
         guard let theme = notification.userInfo?["theme"] as? Theme else { return }
@@ -69,23 +75,29 @@ class SettingsViewController: UIViewController {
     }
     
     // --- 步驟 4: 新增更新 UI 的方法 ---
+    // 在 SettingsViewController.swift 中
+
     private func applyTheme(_ theme: Theme) {
         view.backgroundColor = theme.backgroundColor
         switchLabel.textColor = theme.textColor
+        
+        // --- 新增這行來同步開關狀態 ---
+        themeSwitch.setOn(theme == .dark, animated: false)
     }
-
-    // 發送通知的方法維持不變
+    
     @objc private func themeDidChange(sender: UISwitch) {
         let newTheme: Theme = sender.isOn ? .dark : .light
         
-        print("SettingsViewController: 主題開關被切換！準備發送通知...")
+        // --- 步驟 1: 將新主題儲存到 UserDefaults ---
+        // 我們儲存它的原始字串值 "dark" 或 "light"
+        UserDefaults.standard.set(newTheme.rawValue, forKey: UserDefaultsKeys.appTheme)
+        print("SettingsViewController: 新主題 \(newTheme.rawValue) 已儲存到 UserDefaults。")
         
+        // --- 步驟 2: 發送通知 (維持不變) ---
+        print("SettingsViewController: 準備發送通知...")
         let userInfo = ["theme": newTheme]
-        
-        // 當這行程式碼執行時，NotificationCenter 會「同步」呼叫所有監聽者的方法
-        // 其中就包括了這個物件自己的 handleThemeChange 方法
         NotificationCenter.default.post(name: .themeDidChangeNotification,
-                                        object: self,
+                                        object: nil,
                                         userInfo: userInfo)
     }
     
@@ -95,4 +107,6 @@ class SettingsViewController: UIViewController {
         NotificationCenter.default.removeObserver(self)
         print("SettingsViewController 已銷毀，並移除了監聽。")
     }
+    
+    
 }

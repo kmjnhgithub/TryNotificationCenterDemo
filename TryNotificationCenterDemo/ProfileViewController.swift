@@ -20,7 +20,7 @@ class ProfileViewController: UIViewController {
                                                name: .themeDidChangeNotification,
                                                object: nil)
         print("ProfileViewController: 我也準備好接收主題變更的通知了。")
-        applyTheme(.light)
+        loadAndApplyTheme()
     }
     
     private func setupUI() {
@@ -33,6 +33,13 @@ class ProfileViewController: UIViewController {
             profileLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             profileLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
+    }
+    
+    // 新增一個讀取和套用主題的方法
+    private func loadAndApplyTheme() {
+        let savedThemeValue = UserDefaults.standard.string(forKey: UserDefaultsKeys.appTheme)
+        let currentTheme = Theme(rawValue: savedThemeValue ?? "light") ?? .light
+        applyTheme(currentTheme)
     }
     
     @objc private func handleThemeChange(_ notification: Notification) {

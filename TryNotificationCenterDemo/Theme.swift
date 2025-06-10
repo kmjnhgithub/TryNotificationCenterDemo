@@ -38,3 +38,7 @@ enum Theme: String {
         }
     }
 }
+
+struct UserDefaultsKeys {
+    static let appTheme = "appTheme"
+}
